@@ -1,21 +1,52 @@
-import Image from "next/image";
-import { auth, currentUser } from '@clerk/nextjs/server';
+"use client"
+
+import React, { useEffect, useState } from 'react'
+import axios from "axios";
+import { useRouter } from 'next/navigation';
 
 
 
-import React from 'react'
+export default function HOME() {
 
-export default async function HOME() {
+  const [userId, setUserId] = useState<string | null>(null);
+  // const { userId } = auth();
+  // //const user = await currentUser();
+  // //console.log("XXXXXX: " + user);
 
-  const { userId } = auth();
-  const user = await currentUser();
+  // console.log("AAAAAA: " + userId);
 
-  if (!userId || !user) {
-    return <div>You are not logged in</div>;
+  const router = useRouter();
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/getTheAuth'); // Replace 'your-api-route' with the actual route
+        setUserId(response.data.userId);
+      } catch (error) {
+        console.log('XError:', error);
+        // Handle error
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+
+
+  if (userId === null) {
+    return <div>Loading...</div>;
   }
 
-
-  return (
-    <div>HOME</div>
-  )
+  else
+  {
+    router.push("/SearchPage");
+    return (
+    <div>
+      <p>User ID: {userId}</p>
+    </div>
+  );
+  }
+  
 }
