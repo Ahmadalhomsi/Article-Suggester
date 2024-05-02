@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { NavbarRoutes } from "@/components/Header";
+import toast, { Toaster } from 'react-hot-toast';
+
+
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -16,18 +20,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  
   return (
     <ClerkProvider>
       <html lang="en">
         <body>
-          <header>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
+          <Toaster />
+          <NavbarRoutes>
+
+          </NavbarRoutes>
+
           <main>
             {children}
           </main>

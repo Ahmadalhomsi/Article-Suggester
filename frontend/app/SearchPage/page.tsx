@@ -1,8 +1,11 @@
 // pages/index.js
 "use client"
 
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const SearchPage = () => {
     const router = useRouter();
@@ -14,6 +17,16 @@ const SearchPage = () => {
             router.push(`/search?search=${encodeURIComponent(query)}&site=${selectedSite}`);
         }
     };
+
+    const sendAnApi = async () => {
+
+        // ony works in the backend
+        const res = await axios.get("http://127.0.0.1:8000/");
+        console.log(res);
+        toast(res.data);
+        
+    };
+
 
     return (
         <div className="flex items-center justify-center h-screen">
@@ -32,6 +45,13 @@ const SearchPage = () => {
                         className="bg-blue-500 text-white rounded-r px-4 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
                     >
                         Search
+                    </button>
+
+                    <button
+                        onClick={sendAnApi}
+                        className="bg-blue-500 text-white rounded-r px-4 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                    >
+                        FAST API
                     </button>
                 </div>
                 <div className="flex items-center">

@@ -2,10 +2,13 @@
 
 import { UserButton, useAuth } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { LogOut, Home,Shield,UserCircle } from "lucide-react"; 
+import { LogOut, Home, Shield, UserCircle } from "lucide-react";
 import Link from "next/link";
+import { Button } from "./ui/button";
 
 //import { Button } from "@/components/ui/button";
+import { ClerkProvider, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
+
 
 
 export const NavbarRoutes = () => {
@@ -20,36 +23,43 @@ export const NavbarRoutes = () => {
 
   return (
     <>
-      {isSearchPage && (
-        <div className="hidden md:block">
-          <SearchInput />
-        </div>
-      )}
+
       <div className="flex gap-x-2 ml-auto">
+
+
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+        <SignedIn>
+          <UserButton
+            afterSignOutUrl="/"
+          />
+        </SignedIn>
+
 
         <Link href="/">
           <Button size="sm" variant="ghost">
             <Home className="h-4 w-4 mr-2" />
-            Ana Menü
+            Home
           </Button>
         </Link>
 
 
-        <UserButton
-          afterSignOutUrl="/"
-        />
+
+
+
 
         {isdetailsUpdatePage ? (
           <Link href="/">
             <Button size="sm" variant="ghost">
               <LogOut className="h-4 w-4 mr-2" />
-              Çıkış
+              Exit
             </Button>
           </Link>
         ) : (
-          <Link href="/detailsUpdate">
+            <Link href={`/detailsUpdate?userId=${userId}`}>
             <Button size="sm" variant="ghost">
-              Profil güncelle
+              Details Update
             </Button>
           </Link>
         )}

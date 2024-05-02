@@ -41,7 +41,7 @@ export default function HOME() {
 
   else
   {
-    router.push("/SearchPage");
+    router.push("/searchPage");
     return (
     <div>
       <p>User ID: {userId}</p>
