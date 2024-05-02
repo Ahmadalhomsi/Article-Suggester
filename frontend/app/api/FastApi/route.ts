@@ -6,7 +6,7 @@ export async function GET(req: Request) {
 
     try {
         const res = await axios.get("http://127.0.0.1:8000/");
-        console.log(res.data);
+        console.log("Geter| " + res.data);
 
 
         return NextResponse.json(res.data);
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
             name: 'zzzzzz',
             description: 'vvvvvvv'
         });
-        console.log(res.data);
+        console.log("Poster| " + res.data);
 
 
         return NextResponse.json(res.data);

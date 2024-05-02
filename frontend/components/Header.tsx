@@ -12,7 +12,7 @@ import { ClerkProvider, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
 
 export const NavbarRoutes = () => {
-  const { userId } = useAuth();
+  // const { userId } = useAuth();
   const pathname = usePathname();
 
   const isTeacherPage = pathname?.startsWith("/teacher");
@@ -57,7 +57,7 @@ export const NavbarRoutes = () => {
             </Button>
           </Link>
         ) : (
-            <Link href={`/detailsUpdate?userId=${userId}`}>
+            <Link href={`/detailsUpdate`}>
             <Button size="sm" variant="ghost">
               Details Update
             </Button>

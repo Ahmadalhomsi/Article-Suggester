@@ -7,7 +7,9 @@ import { NextResponse } from 'next/server';
 
 export function GET(req: NextApiRequest): any {
   // Your logic to get the auth information
-  const { userId } = getAuth(req);
+  const  data  = getAuth(req);
+  const userId = data.userId;
+
 
   if (!userId) {
     return NextResponse.json("something");

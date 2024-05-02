@@ -2,20 +2,41 @@
 "use client"
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useUser } from '@clerk/nextjs';
 
 const SearchPage = () => {
     const router = useRouter();
     const [query, setQuery] = useState('');
     const [selectedSite, setSelectedSite] = useState('dergipark');
 
+    const { user } = useUser();
+
+
+    // let userAuth: { sessionClaims: { metadata: { Name: any; }; }; };
+    useEffect(() => {
+        const fetchData = async () => {
+            const unsafeMetadata = user?.unsafeMetadata; // Use with caution
+            const name = unsafeMetadata?.Name;
+            console.log(name);
+            const address = unsafeMetadata?.Address;
+            console.log(address);
+        };
+
+        fetchData();
+    }, []);
+
+
     const handleSearch = () => {
-        if (query.trim() !== '') {
-            router.push(`/search?search=${encodeURIComponent(query)}&site=${selectedSite}`);
-        }
+        // if (query.trim() !== '') {
+        //     router.push(`/search?search=${encodeURIComponent(query)}&site=${selectedSite}`);
+        // }
+        //console.log(userAuth.sessionClaims?.metadata.Name);
+
+
     };
 
     const sendAnApi = async () => {

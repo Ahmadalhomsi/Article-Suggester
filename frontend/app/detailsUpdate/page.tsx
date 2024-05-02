@@ -1,8 +1,10 @@
 "use client"
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useUser } from '@clerk/nextjs';
+
 
 export default function DetailsUpdate() {
     const [userData, setUserData] = useState({
@@ -10,9 +12,31 @@ export default function DetailsUpdate() {
         address: '',
     });
 
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const userId = searchParams.get('userId');
+    const data = useUser();
+    const user = data.user;
+    let name: string
+    let address: string
+
+    const userId = user?.id;
+
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const unsafeMetadata = user?.unsafeMetadata; // Use with caution
+            name = unsafeMetadata?.Name as string;
+            console.log(name);
+            address = unsafeMetadata?.Address as string;
+            console.log(address);
+            setUserData({ name: name, address: address });
+
+        };
+
+        fetchData();
+    }, []);
+
+
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
@@ -51,6 +75,7 @@ export default function DetailsUpdate() {
                         type="text"
                         id="name"
                         name="name"
+                        placeholder={''}
                         value={userData.name}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
