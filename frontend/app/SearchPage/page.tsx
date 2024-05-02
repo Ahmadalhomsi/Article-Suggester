@@ -21,10 +21,10 @@ const SearchPage = () => {
     const sendAnApi = async () => {
 
         // ony works in the backend
-        const res = await axios.get("http://127.0.0.1:8000/");
-        console.log(res);
-        toast(res.data);
-        
+        const res = await axios.get("http://localhost:3000/api/FastApi");
+        console.log(res.data);
+        toast.success("Linked");
+
     };
 
 
