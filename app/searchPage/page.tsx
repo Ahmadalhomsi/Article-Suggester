@@ -42,7 +42,7 @@ const SearchPage = () => {
     const sendAnApi = async () => {
 
         // ony works in the backend
-        const res = await axios.get("http://localhost:3000/api/FastApi");
+        const res = await axios.get("http://localhost:3000/api/pythonx");
         console.log(res.data);
         toast.success("Linked");
 
