@@ -1,5 +1,5 @@
 
-from recommendation_algorithm import algorithm
+from recommendation_algorithm import *
 from http.client import HTTPException
 from typing import Union
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +37,14 @@ def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
 
-@app.post("/recommendations/")
+
+@app.get("/getDataset")
+def get_dataset():
+    dataset = getDataset()
+    return dataset
+
+
+@app.post("/recommendations")
 async def get_recommendations(user_interests: UserInterests):
     recommendations = algorithm(user_interests.user_interests)
     return recommendations

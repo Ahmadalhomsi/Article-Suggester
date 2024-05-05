@@ -13,6 +13,23 @@ import torch
 from typing import List
 import json
 
+# Load the dataset
+dataset = load_dataset("memray/krapivin")
+
+
+def getDataset():
+    # ['name', 'title', 'abstract', 'fulltext', 'keywords']
+    
+    recommendationsJson = [{"name": dataset['validation']['name'][:5],
+                            'title': dataset['validation']['title'][:5],
+                            'abstract': dataset['validation']['abstract'][:5],
+                            'fulltext': dataset['validation']['fulltext'][:5],
+                            'keywords': dataset['validation']['keywords'][:5],
+
+                            }]
+    print(recommendationsJson)
+    return recommendationsJson
+
 
 def algorithm(user_interests):
 
@@ -45,9 +62,6 @@ def algorithm(user_interests):
         preprocessed_text = ' '.join(tokens)
 
         return preprocessed_text
-
-    # Load the dataset
-    dataset = load_dataset("memray/krapivin")
 
     # Define user interests as a string
     preprocessed_user_interests = preprocess_text(user_interests)
@@ -90,7 +104,7 @@ def algorithm(user_interests):
     # Sort recommendations based on similarity score in descending order
     recommendations.sort(key=lambda x: x[1], reverse=True)
 
-    recommendationsz = []
+    recommendationsJson = []
     # Print recommended articles along with similarity scores
     print("Recommended Articles:")
     for recommendation in recommendations:
@@ -99,7 +113,7 @@ def algorithm(user_interests):
         print("--------------------------+++")
         # Convert to float if necessary
         similarity_score = float(recommendation[1])
-        recommendationsz.append(
+        recommendationsJson.append(
             {"abstract": recommendation[0], "similarity_score": similarity_score})
 
-    return recommendationsz
+    return recommendationsJson
