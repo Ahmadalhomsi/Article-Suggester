@@ -1,42 +1,48 @@
 "use client"
-import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useUser } from '@clerk/nextjs';
-
+import { useRouter } from 'next/navigation';
 
 export default function DetailsUpdate() {
     const [userData, setUserData] = useState({
         name: '',
-        address: '',
+        gender: '',
+        birthDate: '',
+        fieldsOfInterest: ''
     });
 
     const data = useUser();
     const user = data.user;
-    let name: string
-    let address: string
+    let name: string;
+    let gender: string;
+    let birthDate: string;
+    let fieldsOfInterest: string;
 
     const userId = user?.id;
 
-
-
+    const router = useRouter()
 
     useEffect(() => {
         const fetchData = async () => {
             const unsafeMetadata = user?.unsafeMetadata; // Use with caution
+            console.log(user);
+
             name = unsafeMetadata?.Name as string;
-            console.log(name);
-            address = unsafeMetadata?.Address as string;
-            console.log(address);
-            setUserData({ name: name, address: address });
+            gender = unsafeMetadata?.Gender as string; // Assuming you have a field named Gender in metadata
+            birthDate = unsafeMetadata?.BirthDate as string; // Assuming you have a field named BirthDate in metadata
+            fieldsOfInterest = unsafeMetadata?.FieldsOfInterest as string; // Assuming you have a field named FieldsOfInterest in metadata
+
+            setUserData({ name, gender, birthDate, fieldsOfInterest });
+            console.log("User Data: ");
+            console.log({ name, gender, birthDate, fieldsOfInterest });
+
 
         };
 
         fetchData();
     }, []);
-
-
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
@@ -50,16 +56,22 @@ export default function DetailsUpdate() {
         e.preventDefault();
         try {
             const response = await axios.post('/api/detailsUpdate', {
-                userId: userId,
+                userId,
                 name: userData.name,
-                address: userData.address,
+                gender: userData.gender,
+                birthDate: userData.birthDate,
+                fieldsOfInterest: userData.fieldsOfInterest
             });
             console.log('User details updated successfully:', response.data);
             toast.success('User details updated successfully!');
             // Redirect or show success message as needed
 
+            router.push('/searchPage'); // Replace '/another-page' with the desired page URL
+
+
+
         } catch (error) {
-            console.error('Error updating user details:', error);
+            console.log('Error updating user details:', error);
         }
     };
 
@@ -83,17 +95,46 @@ export default function DetailsUpdate() {
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="address" className="block text-gray-700 font-bold mb-2">
-                        Address
+                    <label htmlFor="gender" className="block text-gray-700 font-bold mb-2">
+                        Gender
+                    </label>
+                    <select
+                        id="gender"
+                        name="gender"
+                        value={userData.gender}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
+                    >
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+
+                <div className="mb-4">
+                    <label htmlFor="birthDate" className="block text-gray-700 font-bold mb-2">
+                        Birth Date
                     </label>
                     <input
                         type="text"
-                        id="address"
-                        name="address"
-                        value={userData.address}
+                        id="birthDate"
+                        name="birthDate"
+                        value={userData.birthDate}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
-                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="fieldsOfInterest" className="block text-gray-700 font-bold mb-2">
+                        Fields of Interest
+                    </label>
+                    <input
+                        type="text"
+                        id="fieldsOfInterest"
+                        name="fieldsOfInterest"
+                        value={userData.fieldsOfInterest}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
                     />
                 </div>
                 <button

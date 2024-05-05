@@ -51,18 +51,36 @@ const SearchPage = () => {
     const handleSearch = () => {
         // Split the entered keywords into an array
         const enteredKeywords = query.split(';');
-    
+
         // Filter articles based on matching keywords
         const filteredArticles = recommendations.filter(article =>
             enteredKeywords.some(keyword =>
                 article.keywords.includes(keyword.trim())
             )
         );
-    
+
         // Update state to display filtered articles
         setRecommendations(filteredArticles);
     };
-    
+
+
+    const getRecommendations = async () => {
+        try {
+            let fieldOfInterest: string
+            
+            const unsafeMetadata = user?.unsafeMetadata; // Use with caution
+            fieldOfInterest = unsafeMetadata?.FieldsOfInterest as string;
+            console.log(fieldOfInterest);
+
+            const res = await axios.post("http://localhost:3000/recommendations", { "user_interests": fieldOfInterest });
+            console.log(res.data);
+
+            toast.success("Linked");
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
 
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -81,6 +99,13 @@ const SearchPage = () => {
                         className="bg-blue-500 text-white rounded-r px-6 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
                     >
                         Search
+                    </button>
+
+                    <button
+                        onClick={getRecommendations}
+                        className="bg-blue-500 text-white rounded-r px-6 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                    >
+                        Get Recommendations
                     </button>
                 </div>
                 <div className="flex items-center mb-4">
