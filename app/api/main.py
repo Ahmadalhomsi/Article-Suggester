@@ -1,4 +1,6 @@
 
+import sys
+sys.path.append('./app/api/')  # Add the directory containing my_module.py to the module search path
 from recommendation_algorithm import *
 from http.client import HTTPException
 from typing import Union
@@ -13,13 +15,21 @@ app = FastAPI()
 # --------------
 
 
-class UserInterests(BaseModel):
+class Data(BaseModel):
     user_interests: str
+    dataset_count: int
 
+    
 
 class Item(BaseModel):
     name: str
     description: str = None
+
+    
+@app.get("/")
+def read_root():
+    return {"Hellox": "Worldx"}
+
 
 
 @app.get("/api/pythonx")
@@ -27,9 +37,9 @@ def read_root():
     return {"Hellox": "Worldx"}
 
 
-@app.post("/api/vv")
-def get_recommendations(user_interests: UserInterests):
-    return {"VV": user_interests}
+# @app.post("/api/vv")
+# def get_recommendations(user_interests: UserInterests):
+#     return {"VV": user_interests}
 
 
 @app.get("/items/{item_id}")
@@ -45,8 +55,10 @@ def get_dataset():
 
 
 @app.post("/recommendations")
-async def get_recommendations(user_interests: UserInterests):
-    recommendations = algorithm(user_interests.user_interests)
+async def get_recommendations(data: Data):
+    print("XXXXXXXX")
+    print(data.user_interests, data.dataset_count)
+    recommendations = algorithm(data.user_interests, data.dataset_count)
     return recommendations
 
 

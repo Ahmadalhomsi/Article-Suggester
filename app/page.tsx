@@ -21,7 +21,7 @@ export default function HOME() {
 
 
   if (!isSignedIn) {
-    return <div>Loading...</div>;
+    return <div>You are not signed in</div>;
   }
 
   else

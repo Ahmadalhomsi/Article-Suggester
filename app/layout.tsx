@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { ClerkLoaded, ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { NavbarRoutes } from "@/components/Header";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -21,21 +21,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  
+
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body>
-          <Toaster />
-          <NavbarRoutes>
+      <ClerkLoaded>
 
-          </NavbarRoutes>
+        <html lang="en">
+          <body>
+            <Toaster />
+            <NavbarRoutes>
 
-          <main>
-            {children}
-          </main>
-        </body>
-      </html>
+            </NavbarRoutes>
+
+            <main>
+              {children}
+            </main>
+          </body>
+        </html>
+      </ClerkLoaded>
+
     </ClerkProvider>
   )
 

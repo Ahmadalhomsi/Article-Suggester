@@ -20,6 +20,8 @@ const SearchPage = () => {
     const [query, setQuery] = useState('');
     const [selectedSite, setSelectedSite] = useState('dergipark');
     const [recommendations, setRecommendations] = useState<Article[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [datasetCount, setDatasetCount] = useState(0);
 
     const { user } = useUser();
 
@@ -66,21 +68,33 @@ const SearchPage = () => {
 
     const getRecommendations = async () => {
         try {
+            setIsLoading(true)
             let fieldOfInterest: string
-            
+
             const unsafeMetadata = user?.unsafeMetadata; // Use with caution
             fieldOfInterest = unsafeMetadata?.FieldsOfInterest as string;
-            console.log(fieldOfInterest);
 
-            const res = await axios.post("http://localhost:3000/recommendations", { "user_interests": fieldOfInterest });
+            console.log("Infos");
+            console.log(fieldOfInterest);
+            console.log(datasetCount);
+            
+            const res = await axios.post("http://localhost:3000/recommendations", {
+                "user_interests": fieldOfInterest,
+                "dataset_count": datasetCount
+              });
             console.log(res.data);
 
             toast.success("Linked");
+            setIsLoading(false)
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
 
+    const handleDatasetCountChange = (e: { target: { value: string; }; }) => {
+        const count = parseInt(e.target.value);
+        setDatasetCount(count);
+    };
 
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -101,11 +115,12 @@ const SearchPage = () => {
                         Search
                     </button>
 
+
                     <button
                         onClick={getRecommendations}
                         className="bg-blue-500 text-white rounded-r px-6 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
                     >
-                        Get Recommendations
+                        {isLoading ? "Loading..." : "Get Recommendations"}
                     </button>
                 </div>
                 <div className="flex items-center mb-4">
@@ -119,7 +134,18 @@ const SearchPage = () => {
                         <option value="option1">Option 1</option>
                         <option value="option2">Option 2</option>
                     </select>
+                    <div className="flex items-center mb-4">
+                    <label htmlFor="dataset-count" className="mr-2">Dataset Count:</label>
+                    <input
+                        type="number"
+                        id="dataset-count"
+                        value={datasetCount}
+                        onChange={handleDatasetCountChange}
+                        className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
+                    />
                 </div>
+                </div>
+                
                 <div className="grid grid-cols-fr md:grid-cols-3fr gap-4">
                     {recommendations.map((article, index) => (
                         <div key={index} className="border p-4 rounded-md">

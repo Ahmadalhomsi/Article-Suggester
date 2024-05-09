@@ -11,7 +11,8 @@ from torch import nn
 from torch.optim import Adam
 import torch
 from typing import List
-import json
+from joblib import Parallel, delayed
+
 
 # Load the dataset
 dataset = load_dataset("memray/krapivin")
@@ -20,18 +21,18 @@ dataset = load_dataset("memray/krapivin")
 def getDataset():
     # ['name', 'title', 'abstract', 'fulltext', 'keywords']
     
-    recommendationsJson = [{"name": dataset['validation']['name'][:5],
-                            'title': dataset['validation']['title'][:5],
-                            'abstract': dataset['validation']['abstract'][:5],
-                            'fulltext': dataset['validation']['fulltext'][:5],
-                            'keywords': dataset['validation']['keywords'][:5],
+    recommendationsJson = [{"name": dataset['validation']['name'],
+                            'title': dataset['validation']['title'],
+                            'abstract': dataset['validation']['abstract'],
+                            #'fulltext': dataset['validation']['fulltext'][:5],
+                            'keywords': dataset['validation']['keywords'],
 
                             }]
     print(recommendationsJson)
     return recommendationsJson
 
 
-def algorithm(user_interests):
+def algorithm(user_interests, datasetCount):
 
     # Download necessary resources from NLTK
     nltk.download('punkt')
@@ -69,6 +70,8 @@ def algorithm(user_interests):
     # Tokenize and encode user interests using SciBERT tokenizer
     encoded_user_interests = tokenizer(
         preprocessed_user_interests, return_tensors='pt')
+    
+    print("Here1")
 
     # Process the user's interests using SciBERT model
     with torch.no_grad():
@@ -81,7 +84,7 @@ def algorithm(user_interests):
     # Calculate cosine similarity between user interests vector and article vectors
     recommendations = []
     # Considering the first 4 abstracts for demonstration
-    for abstract in dataset['validation']['abstract'][:4]:
+    for abstract in dataset['validation']['abstract'][:datasetCount]:
         preprocessed_abstract = preprocess_text(abstract)
         encoded_abstract = tokenizer(
             preprocessed_abstract, return_tensors='pt')
@@ -100,6 +103,9 @@ def algorithm(user_interests):
 
         # Store the recommendation along with its similarity score
         recommendations.append((abstract, similarity))
+
+    print("Here2")
+
 
     # Sort recommendations based on similarity score in descending order
     recommendations.sort(key=lambda x: x[1], reverse=True)
