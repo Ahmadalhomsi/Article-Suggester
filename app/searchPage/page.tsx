@@ -13,6 +13,7 @@ interface Article {
     title: string[];
     abstract: string[];
     keywords: string[];
+    similarity_score: number;
 }
 
 const SearchPage = () => {
@@ -77,13 +78,14 @@ const SearchPage = () => {
             console.log("Infos");
             console.log(fieldOfInterest);
             console.log(datasetCount);
-            
+
             const res = await axios.post("http://localhost:3000/recommendations", {
                 "user_interests": fieldOfInterest,
                 "dataset_count": datasetCount
-              });
+            });
             console.log(res.data);
 
+            setRecommendations(res.data);
             toast.success("Linked");
             setIsLoading(false)
         } catch (error) {
@@ -114,8 +116,6 @@ const SearchPage = () => {
                     >
                         Search
                     </button>
-
-
                     <button
                         onClick={getRecommendations}
                         className="bg-blue-500 text-white rounded-r px-6 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
@@ -123,7 +123,7 @@ const SearchPage = () => {
                         {isLoading ? "Loading..." : "Get Recommendations"}
                     </button>
                 </div>
-                <div className="flex items-center mb-4">
+                <div className="flex items-center mb-4 gap-3">
                     <label htmlFor="site-select" className="mr-2">Site:</label>
                     <select
                         id="site-select"
@@ -134,35 +134,32 @@ const SearchPage = () => {
                         <option value="option1">Option 1</option>
                         <option value="option2">Option 2</option>
                     </select>
-                    <div className="flex items-center mb-4">
-                    <label htmlFor="dataset-count" className="mr-2">Dataset Count:</label>
-                    <input
-                        type="number"
-                        id="dataset-count"
-                        value={datasetCount}
-                        onChange={handleDatasetCountChange}
-                        className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
-                    />
+                        <label htmlFor="dataset-count" className="mr-0.5">Dataset Count:</label>
+                        <input
+                            type="number"
+                            id="dataset-count"
+                            value={datasetCount}
+                            onChange={handleDatasetCountChange}
+                            className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
+                        />
                 </div>
-                </div>
-                
+
                 <div className="grid grid-cols-fr md:grid-cols-3fr gap-4">
-                    {recommendations.map((article, index) => (
+                    {recommendations.map((recommendation, index) => (
                         <div key={index} className="border p-4 rounded-md">
-                            <p className="font-bold text-blue-500">Index: {index}</p>
-                            <p className="font-bold">Name: {article.name}</p>
-                            <p className="font-bold">Title: {article.title}</p>
-                            <p className="font-bold">Keywords: {article.keywords}</p>
-                            <p>Abstract: {article.abstract}</p>
-                            {/* You can add more fields here */}
+                            <p className="font-bold">Name: {recommendation.name}</p>
+                            <p className="font-bold">Title: {recommendation.title}</p>
+                            <p className="font-normal text-blue-500">Abstract: {recommendation.abstract}</p>
+                            <p className="font-bold text-green-300">Similarity Score: {recommendation.similarity_score}</p>
+                            <p className="font-light text-gray-200">Keywords: {recommendation.keywords}</p>
+
                         </div>
                     ))}
                 </div>
-
             </div>
         </div>
-
     );
 };
+
 
 export default SearchPage;
