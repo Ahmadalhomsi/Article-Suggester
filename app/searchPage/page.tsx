@@ -22,7 +22,7 @@ const SearchPage = () => {
     const [selectedSite, setSelectedSite] = useState('dergipark');
     const [recommendations, setRecommendations] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [datasetCount, setDatasetCount] = useState(0);
+    const [datasetCount, setDatasetCount] = useState(20);
 
     const { user } = useUser();
 
@@ -97,6 +97,8 @@ const SearchPage = () => {
         const count = parseInt(e.target.value);
         setDatasetCount(count);
     };
+
+    
 
     return (
         <div className="flex items-center justify-center min-h-screen">

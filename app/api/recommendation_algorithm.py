@@ -1,4 +1,4 @@
-import spacy
+# import spacy
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -12,6 +12,8 @@ from torch.optim import Adam
 import torch
 from typing import List
 from joblib import Parallel, delayed
+import math
+
 
 
 # Load the dataset
@@ -39,7 +41,7 @@ def algorithm(user_interests, datasetCount):
     nltk.download('stopwords')
 
     # Load the spaCy model with word vectors
-    nlp = spacy.load("en_core_web_sm")
+    # nlp = spacy.load("en_core_web_sm")
 
     # Load SciBERT model and tokenizer
     model = AutoModel.from_pretrained("allenai/scibert_scivocab_uncased")
@@ -71,7 +73,7 @@ def algorithm(user_interests, datasetCount):
     encoded_user_interests = tokenizer(
         preprocessed_user_interests, return_tensors='pt')
     
-    print("Here1")
+    
 
     # Process the user's interests using SciBERT model
     with torch.no_grad():
@@ -80,32 +82,48 @@ def algorithm(user_interests, datasetCount):
     # Extract the output embeddings for user interests
     user_interests_vector = user_interests_output.last_hidden_state.mean(
         dim=1).squeeze()
+    
+    # Set the batch size
+    batch_size = 32
 
-    # Calculate cosine similarity between user interests vector and article vectors
+    # Calculate total number of datasets
+    total_datasets = len(dataset['validation']['abstract'][:datasetCount])
+
+    # Calculate total number of batches
+    total_batches = math.ceil(total_datasets / batch_size)
+
+    # Initialize recommendations list
     recommendations = []
-    # Considering the first 4 abstracts for demonstration
-    for abstract in dataset['validation']['abstract'][:datasetCount]:
-        preprocessed_abstract = preprocess_text(abstract)
-        encoded_abstract = tokenizer(
-            preprocessed_abstract, return_tensors='pt')
 
-        # Process the abstract using SciBERT model
-        with torch.no_grad():
-            abstract_output = model(**encoded_abstract)
+    # Process datasets in batches
+    for batch_index in range(total_batches):
+        # Calculate the start and end index for the current batch
+        start_index = batch_index * batch_size
+        end_index = min((batch_index + 1) * batch_size, total_datasets)
 
-        # Extract the output embeddings for the abstract
-        abstract_vector = abstract_output.last_hidden_state.mean(
-            dim=1).squeeze()
+        # Process the current batch
+        for i in range(start_index, end_index):
+            abstract = dataset['validation']['abstract'][i]
+            preprocessed_abstract = preprocess_text(abstract)
+            encoded_abstract = tokenizer(preprocessed_abstract, return_tensors='pt')
 
-        # Calculate cosine similarity between user interests vector and abstract vector
-        similarity = cosine_similarity(user_interests_vector.reshape(
-            1, -1), abstract_vector.reshape(1, -1))[0][0]
+            # Process the abstract using SciBERT model
+            with torch.no_grad():
+                abstract_output = model(**encoded_abstract)
 
-        # Store the recommendation along with its similarity score
-        recommendations.append((abstract, similarity))
+            # Extract the output embeddings for the abstract
+            abstract_vector = abstract_output.last_hidden_state.mean(dim=1).squeeze()
 
-    print("Here2")
+            # Calculate cosine similarity between user interests vector and abstract vector
+            similarity = cosine_similarity(user_interests_vector.reshape(1, -1), abstract_vector.reshape(1, -1))[0][0]
 
+            # Store the recommendation along with its similarity score
+            recommendations.append((abstract, similarity))
+
+        # Print progress after processing each batch
+        print(f"Batch {batch_index + 1}/{total_batches} processed")
+
+    print("All batches processed")
 
     # Sort recommendations based on similarity score in descending order
     recommendations.sort(key=lambda x: x[1], reverse=True)
