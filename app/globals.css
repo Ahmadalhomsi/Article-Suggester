@@ -24,6 +24,14 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+    background-repeat: no-repeat;
+    min-height: max-content;
+    background-size: cover;
+    /* or background-size: 100%; */
+    background-attachment: fixed;
+    /* Keeps the background fixed while scrolling */
+    min-height: 100vh;
+    /* Ensure the body covers the entire viewport height */
 }
 
 @layer utilities {

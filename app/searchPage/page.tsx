@@ -126,17 +126,8 @@ const SearchPage = () => {
                     </button>
                 </div>
                 <div className="flex items-center mb-4 gap-3">
-                    <label htmlFor="site-select" className="mr-2">Site:</label>
-                    <select
-                        id="site-select"
-                        className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
-                        value={selectedSite}
-                        onChange={(e) => setSelectedSite(e.target.value)}
-                    >
-                        <option value="option1">Option 1</option>
-                        <option value="option2">Option 2</option>
-                    </select>
-                        <label htmlFor="dataset-count" className="mr-0.5">Dataset Count:</label>
+
+                        <label htmlFor="dataset-count" className="mr-0.5 font-bold">DC:</label>
                         <input
                             type="number"
                             id="dataset-count"

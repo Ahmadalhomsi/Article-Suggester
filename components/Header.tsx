@@ -17,7 +17,6 @@ export const NavbarRoutes = () => {
 
 
   const isdetailsUpdatePage = pathname === "/detailsUpdate";
-  const isAdminPage = pathname === "/admin";
   
 
   return (
