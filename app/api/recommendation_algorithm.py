@@ -1,4 +1,7 @@
 # import spacy
+import os
+import sys
+sys.path.append('./app/api/')
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -15,18 +18,17 @@ from joblib import Parallel, delayed
 import math
 
 
-
 # Load the dataset
 dataset = load_dataset("memray/krapivin")
 
 
 def getDataset():
     # ['name', 'title', 'abstract', 'fulltext', 'keywords']
-    
+
     recommendationsJson = [{"name": dataset['validation']['name'],
                             'title': dataset['validation']['title'],
                             'abstract': dataset['validation']['abstract'],
-                            #'fulltext': dataset['validation']['fulltext'][:5],
+                            # 'fulltext': dataset['validation']['fulltext'][:5],
                             'keywords': dataset['validation']['keywords'],
 
                             }]
@@ -34,20 +36,15 @@ def getDataset():
     return recommendationsJson
 
 
-def algorithm(user_interests, datasetCount):
-
+def algorithm(user_interests, datasetCount, model_choice, model_path='/fastText'):
     # Download necessary resources from NLTK
+    print("Model Choice: " )
+    print(model_choice)
+
     nltk.download('punkt')
     nltk.download('stopwords')
 
-    # Load the spaCy model with word vectors
-    # nlp = spacy.load("en_core_web_sm")
-
-    # Load SciBERT model and tokenizer
-    model = AutoModel.from_pretrained("allenai/scibert_scivocab_uncased")
-    tokenizer = AutoTokenizer.from_pretrained(
-        "allenai/scibert_scivocab_uncased")
-
+    # Function to preprocess text
     def preprocess_text(text):
         # Lowercase the text
         text_lower = text.lower()
@@ -66,23 +63,39 @@ def algorithm(user_interests, datasetCount):
 
         return preprocessed_text
 
-    # Define user interests as a string
+    # Load models based on user choice
+    if model_choice == 1:  # SciBERT
+        # Load SciBERT model and tokenizer
+        model = AutoModel.from_pretrained("allenai/scibert_scivocab_uncased")
+        tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/scibert_scivocab_uncased")
+
+        def encode_text(text):
+            encoded = tokenizer(text, return_tensors='pt')
+            with torch.no_grad():
+                output = model(**encoded)
+            return output.last_hidden_state.mean(dim=1).squeeze()
+
+    elif model_choice == 2:  # FastText
+        import fasttext
+        ft_model = fasttext.load_model(
+            os.path.join('cc.en.300.bin'))
+
+        def encode_text(text):
+            words = text.split()
+            vectors = [ft_model.get_word_vector(
+                word) for word in words if word in ft_model]
+            if vectors:
+                return torch.tensor(np.mean(vectors, axis=0))
+            else:
+                return torch.zeros(ft_model.get_dimension())
+
+    # Preprocess user interests
     preprocessed_user_interests = preprocess_text(user_interests)
 
-    # Tokenize and encode user interests using SciBERT tokenizer
-    encoded_user_interests = tokenizer(
-        preprocessed_user_interests, return_tensors='pt')
-    
-    
+    # Encode user interests
+    user_interests_vector = encode_text(preprocessed_user_interests)
 
-    # Process the user's interests using SciBERT model
-    with torch.no_grad():
-        user_interests_output = model(**encoded_user_interests)
-
-    # Extract the output embeddings for user interests
-    user_interests_vector = user_interests_output.last_hidden_state.mean(
-        dim=1).squeeze()
-    
     # Set the batch size
     batch_size = 32
 
@@ -105,17 +118,11 @@ def algorithm(user_interests, datasetCount):
         for i in range(start_index, end_index):
             abstract = dataset['validation']['abstract'][i]
             preprocessed_abstract = preprocess_text(abstract)
-            encoded_abstract = tokenizer(preprocessed_abstract, return_tensors='pt')
-
-            # Process the abstract using SciBERT model
-            with torch.no_grad():
-                abstract_output = model(**encoded_abstract)
-
-            # Extract the output embeddings for the abstract
-            abstract_vector = abstract_output.last_hidden_state.mean(dim=1).squeeze()
+            abstract_vector = encode_text(preprocessed_abstract)
 
             # Calculate cosine similarity between user interests vector and abstract vector
-            similarity = cosine_similarity(user_interests_vector.reshape(1, -1), abstract_vector.reshape(1, -1))[0][0]
+            similarity = cosine_similarity(user_interests_vector.reshape(
+                1, -1), abstract_vector.reshape(1, -1))[0][0]
 
             # Store the recommendation along with its similarity score
             recommendations.append((abstract, similarity))

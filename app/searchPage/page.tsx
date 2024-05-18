@@ -19,37 +19,77 @@ interface Article {
 const SearchPage = () => {
     const router = useRouter();
     const [query, setQuery] = useState('');
-    const [selectedSite, setSelectedSite] = useState('dergipark');
+    const [selectedModel, setSelectedModel] = useState(1);
     const [recommendations, setRecommendations] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGettingDataset, setIsGettingDataset] = useState(false);
     const [datasetCount, setDatasetCount] = useState(20);
+    const [showTopFive, setShowTopFive] = useState(false);
+
+    const handleShowTopFiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setShowTopFive(checked);
+
+        // Update the recommendations based on the checkbox state
+        if (checked) {
+            setRecommendations(recommendations.slice(0, 5));
+        } else {
+            setRecommendations(recommendations);
+        }
+    };
+
 
     const { user } = useUser();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axios.get("http://localhost:3000/getDataset");
-                if (res.data.length > 0) {
-                    const articles: Article[] = res.data[0].name.map((_: any, index: string | number) => {
-                        console.log(res.data[0].name[index]); // Print name
-                        return {
-                            name: res.data[0].name[index],
-                            title: res.data[0].title[index],
-                            abstract: res.data[0].abstract[index],
-                            keywords: res.data[0].keywords[index],
-                        };
-                    });
-                    setRecommendations(articles);
-                }
-                toast.success("Linked");
-            } catch (error) {
-                console.error("Error fetching data:", error);
+    const getDataset = async () => {
+        setIsGettingDataset(true)
+        try {
+            const res = await axios.get("http://localhost:3000/getDataset");
+            if (res.data.length > 0) {
+                const articles: Article[] = res.data[0].name.map((_: any, index: string | number) => {
+                    console.log(res.data[0].name[index]); // Print name
+                    return {
+                        name: res.data[0].name[index],
+                        title: res.data[0].title[index],
+                        abstract: res.data[0].abstract[index],
+                        keywords: res.data[0].keywords[index],
+                    };
+                });
+                setRecommendations(articles);
             }
-        };
+            toast.success("Linked");
+            setIsGettingDataset(false)
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setIsGettingDataset(false)
+        }
+    };
 
-        fetchData();
-    }, []);
+
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const res = await axios.get("http://localhost:3000/getDataset");
+    //             if (res.data.length > 0) {
+    //                 const articles: Article[] = res.data[0].name.map((_: any, index: string | number) => {
+    //                     console.log(res.data[0].name[index]); // Print name
+    //                     return {
+    //                         name: res.data[0].name[index],
+    //                         title: res.data[0].title[index],
+    //                         abstract: res.data[0].abstract[index],
+    //                         keywords: res.data[0].keywords[index],
+    //                     };
+    //                 });
+    //                 setRecommendations(articles);
+    //             }
+    //             toast.success("Linked");
+    //         } catch (error) {
+    //             console.error("Error fetching data:", error);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, []);
 
     const handleSearch = () => {
         // Split the entered keywords into an array
@@ -69,27 +109,49 @@ const SearchPage = () => {
 
     const getRecommendations = async () => {
         try {
-            setIsLoading(true)
-            let fieldOfInterest: string
+            setIsLoading(true);
+            let fieldOfInterest;
 
             const unsafeMetadata = user?.unsafeMetadata; // Use with caution
-            fieldOfInterest = unsafeMetadata?.FieldsOfInterest as string;
+            fieldOfInterest = unsafeMetadata?.FieldsOfInterest;
 
             console.log("Infos");
             console.log(fieldOfInterest);
             console.log(datasetCount);
 
-            const res = await axios.post("http://localhost:3000/recommendations", {
-                "user_interests": fieldOfInterest,
-                "dataset_count": datasetCount
+            const response = await fetch("http://127.0.0.1:8000/recommendations", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_interests: fieldOfInterest,
+                    dataset_count: datasetCount,
+                    model_choice: selectedModel,
+                }),
             });
-            console.log(res.data);
 
-            setRecommendations(res.data);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            // Sort articles by similarity score in descending order
+            let sortedRecommendations = data.sort((a: Article, b: Article) => b.similarity_score - a.similarity_score);
+
+            // Slice the top 5 articles if the checkbox is checked
+            if (showTopFive) {
+                sortedRecommendations = sortedRecommendations.slice(0, 5);
+            }
+
+            setRecommendations(data);
             toast.success("Linked");
-            setIsLoading(false)
+            setIsLoading(false);
         } catch (error) {
             console.error("Error fetching data:", error);
+            setIsLoading(false);
         }
     };
 
@@ -98,7 +160,7 @@ const SearchPage = () => {
         setDatasetCount(count);
     };
 
-    
+
 
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -124,18 +186,47 @@ const SearchPage = () => {
                     >
                         {isLoading ? "Loading..." : "Get Recommendations"}
                     </button>
+                    <button
+                        onClick={getDataset}
+                        className="bg-blue-500 text-white rounded-r px-6 py-2 ml-1 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                    >
+                        {isGettingDataset ? "Loading..." : "Get Dataset"}
+                    </button>
                 </div>
                 <div className="flex items-center mb-4 gap-3">
 
-                        <label htmlFor="dataset-count" className="mr-0.5 font-bold">DC:</label>
+                    <label htmlFor="dataset-count" className="mr-0.5 font-bold">DC:</label>
+                    <input
+                        type="number"
+                        id="dataset-count"
+                        value={datasetCount}
+                        onChange={handleDatasetCountChange}
+                        className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
+                    />
+
+                    <select
+                        id="model-select"
+                        className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(+e.target.value)}
+                    >
+                        <option value="1">SciBert</option>
+                        <option value="2">FastText</option>
+                    </select>
+
+                    <label className="ml-4">
                         <input
-                            type="number"
-                            id="dataset-count"
-                            value={datasetCount}
-                            onChange={handleDatasetCountChange}
-                            className="px-6 py-2 border border-gray-300 rounded-md focus:outline-none text-blue-700"
+                            type="checkbox"
+                            checked={showTopFive}
+                            onChange={handleShowTopFiveChange}
+                            className="mr-2"
                         />
+                        Show Top 5
+                    </label>
                 </div>
+
+
+
 
                 <div className="grid grid-cols-fr md:grid-cols-3fr gap-4">
                     {recommendations.map((recommendation, index) => (

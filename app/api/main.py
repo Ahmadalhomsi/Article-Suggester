@@ -18,6 +18,7 @@ app = FastAPI()
 class Data(BaseModel):
     user_interests: str
     dataset_count: int
+    model_choice: int
 
     
 
@@ -57,18 +58,18 @@ def get_dataset():
 @app.post("/recommendations")
 async def get_recommendations(data: Data):
     print("XXXXXXXX")
-    print(data.user_interests, data.dataset_count)
-    recommendations = algorithm(data.user_interests, data.dataset_count)
+    print(data.user_interests, data.dataset_count, data.model_choice)
+    recommendations = algorithm(data.user_interests, data.dataset_count, data.model_choice)
     return recommendations
 
 
 
-origins = ['http://127.0.0.1:8000/']
+origins = ['http://localhost:3000/']
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Or specify your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
