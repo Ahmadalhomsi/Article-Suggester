@@ -1,4 +1,26 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Next.js Recommendation System
+
+## Overview
+
+This is a Next.js project integrated with Clerk for user authentication. The application allows users to search for articles and get personalized recommendations based on their interests. The backend utilizes SciBERT and FastText models for generating recommendations.
+
+## Features
+
+- User authentication with Clerk
+- Search articles by keywords
+- Get personalized recommendations
+- Toggle to show top 5 recommendations
+- Load datasets for recommendation
+
+## Technologies Used
+
+- [Next.js](https://nextjs.org/)
+- [Clerk](https://clerk.dev/)
+- [React](https://reactjs.org/)
+- [SciBERT](https://github.com/allenai/scibert)
+- [FastText](https://fasttext.cc/)
+- [React Hot Toast](https://react-hot-toast.com/)
+
 
 ## Getting Started
 
